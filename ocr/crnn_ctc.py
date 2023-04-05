@@ -207,4 +207,4 @@ class ImageOcrAPI(LabelStudioMLBase):
         model_path = os.path.join(workdir, 'model.pt')
         self.model.save(model_path)
 
-        return {'model_path': model_path, 'classes': dataset.classes}
+        return {'model_path': model_path, 'classes': dataset.charset}
