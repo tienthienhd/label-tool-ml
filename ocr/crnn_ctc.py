@@ -32,7 +32,7 @@ os.makedirs(image_cache_dir, exist_ok=True)
 
 def get_transformed_image(url):
     filepath = get_local_path(url,
-                              hostname='http://localhost:8080',
+                              hostname='http://label-tool.com:8080',
                               access_token='70f77f55f9c77c00cc688a885bf49a319f5b8e5e')
 
     with open(filepath, mode='rb') as f:
@@ -69,7 +69,7 @@ class ImageOcrDataset(Dataset):
 
 class ImageOcr(object):
 
-    def __init__(self, num_classes, freeze_extractor=False):
+    def __init__(self, num_characters, freeze_extractor=False):
         self.model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
         if freeze_extractor:
             print('Transfer learning with a fixed ConvNet feature extractor')
@@ -79,7 +79,7 @@ class ImageOcr(object):
             print('Transfer learning with a full ConvNet finetuning')
 
         num_ftrs = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_ftrs, num_classes)
+        self.model.fc = nn.Linear(num_ftrs, num_characters)
 
         self.model = self.model.to(device)
 
@@ -153,15 +153,15 @@ class ImageOcrAPI(LabelStudioMLBase):
 
     def __init__(self, freeze_extractor=False, **kwargs):
         super(ImageOcrAPI, self).__init__(**kwargs)
-        self.from_name, self.to_name, self.value, self.classes = get_single_tag_keys(
-            self.parsed_label_config, 'Choices', 'Image')
+        self.from_name, self.to_name, self.value, self.labels = get_single_tag_keys(
+            self.parsed_label_config, 'TextArea', 'Image')
         self.freeze_extractor = freeze_extractor
         if self.train_output:
             self.classes = self.train_output['classes']
-            self.model = ImageOcr(len(self.classes), freeze_extractor)
+            self.model = ImageOcr(len(self.labels), freeze_extractor)
             self.model.load(self.train_output['model_path'])
         else:
-            self.model = ImageOcr(len(self.classes), freeze_extractor)
+            self.model = ImageOcr(len(self.labels), freeze_extractor)
 
     def reset_model(self):
         self.model = ImageOcr(len(self.classes), self.freeze_extractor)

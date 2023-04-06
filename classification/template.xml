@@ -1,0 +1,7 @@
+<View>
+  <Image name="image_object" value="$image_url"/>
+  <Choices name="image_classes" toName="image_object" choice="single" showInLine="true">
+   <Choice value="Cat"/>
+   <Choice value="Dog"/>
+  </Choices>
+</View>

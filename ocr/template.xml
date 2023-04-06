@@ -1,0 +1,4 @@
+<View>
+    <Image name="image" value="$image_url"/>
+    <TextArea name="label" toName="image" maxSubmissions="1" rows="1" placeholder="Recognized Text"/>
+</View>

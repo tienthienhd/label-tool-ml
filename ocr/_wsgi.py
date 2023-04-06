@@ -1,36 +1,34 @@
-import json
-import os
 import argparse
-import logging
+import json
 import logging.config
+import os
 
 logging.config.dictConfig({
-  "version": 1,
-  "formatters": {
-    "standard": {
-      "format": "[%(asctime)s] [%(levelname)s] [%(name)s::%(funcName)s::%(lineno)d] %(message)s"
+    "version": 1,
+    "formatters": {
+        "standard": {
+            "format": "[%(asctime)s] [%(levelname)s] [%(name)s::%(funcName)s::%(lineno)d] %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "stream": "ext://sys.stdout",
+            "formatter": "standard"
+        }
+    },
+    "root": {
+        "level": "ERROR",
+        "handlers": [
+            "console"
+        ],
+        "propagate": True
     }
-  },
-  "handlers": {
-    "console": {
-      "class": "logging.StreamHandler",
-      "level": "DEBUG",
-      "stream": "ext://sys.stdout",
-      "formatter": "standard"
-    }
-  },
-  "root": {
-    "level": "ERROR",
-    "handlers": [
-      "console"
-    ],
-    "propagate": True
-  }
 })
 
 from label_studio_ml.api import init_app
-from crnn_ctc import ImageClassifierAPI
-
+from crnn_ctc import ImageOcrAPI
 
 _DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
 
@@ -74,12 +72,14 @@ if __name__ == "__main__":
     if args.log_level:
         logging.root.setLevel(args.log_level)
 
+
     def isfloat(value):
         try:
             float(value)
             return True
         except ValueError:
             return False
+
 
     def parse_kwargs():
         param = dict()
@@ -96,17 +96,18 @@ if __name__ == "__main__":
                 param[k] = v
         return param
 
+
     kwargs = get_kwargs_from_config()
 
     if args.kwargs:
         kwargs.update(parse_kwargs())
 
     if args.check:
-        print('Check "' + ImageClassifierAPI.__name__ + '" instance creation..')
-        model = ImageClassifierAPI(**kwargs)
+        print('Check "' + ImageOcrAPI.__name__ + '" instance creation..')
+        model = ImageOcrAPI(**kwargs)
 
     app = init_app(
-        model_class=ImageClassifierAPI,
+        model_class=ImageOcrAPI,
         model_dir=os.environ.get('MODEL_DIR', args.model_dir),
         redis_queue=os.environ.get('RQ_QUEUE_NAME', 'default'),
         redis_host=os.environ.get('REDIS_HOST', 'localhost'),
@@ -119,7 +120,7 @@ if __name__ == "__main__":
 else:
     # for uWSGI use
     app = init_app(
-        model_class=ImageClassifierAPI,
+        model_class=ImageOcrAPI,
         model_dir=os.environ.get('MODEL_DIR', os.path.dirname(__file__)),
         redis_queue=os.environ.get('RQ_QUEUE_NAME', 'default'),
         redis_host=os.environ.get('REDIS_HOST', 'localhost'),
